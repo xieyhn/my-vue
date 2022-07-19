@@ -1,0 +1,7 @@
+{
+  "name": "examples",
+  "version": "0.0.0",
+  "dependencies": {
+    "my-vue": "0.0.0"
+  }
+}

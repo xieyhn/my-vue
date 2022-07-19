@@ -1,0 +1,6 @@
+{
+  "name": "@my-vue/reactivity",
+  "version": "0.0.0",
+  "module": "src/index.ts",
+  "license": "MIT"
+}

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "sourceMap": false,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "strict": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "removeComments": false,
+    "declaration": true,
+    "lib": ["ESNext", "DOM"],
+    "rootDir": ".",
+    "paths": {
+      "my-vue": ["packages/my-vue/src"],
+      "@my-vue/reactivity": ["packages/reactivity/src"]
+    }
+  }
+}
