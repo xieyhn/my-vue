@@ -3,10 +3,12 @@ import { mutableHandlers } from './baseHandlers'
 
 export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive',
+  RAW = '__v_raw'
 }
 
 export interface Target {
   [ReactiveFlags.IS_REACTIVE]?: boolean
+  [ReactiveFlags.RAW]?: any
 }
 
 export const reactiveMap = new WeakMap<Target, any>()
@@ -41,4 +43,9 @@ export function reactive<T extends object>(target: T): T {
 
 export function isReactive(value: unknown) {
   return (value && (value as Target)[ReactiveFlags.IS_REACTIVE])
+}
+
+export function toRaw<T>(value: T): T {
+  const raw = value && (value as Target)[ReactiveFlags.RAW]
+  return raw ? toRaw(raw) : value
 }
