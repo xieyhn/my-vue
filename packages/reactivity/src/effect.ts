@@ -3,6 +3,15 @@ type KeyToDepMap = Map<any, Set<ReactiveEffect>>
 const targetMap = new WeakMap<any, KeyToDepMap>()
 
 export let activeEffect: ReactiveEffect | undefined
+export let shouldTrack = true
+
+export function pauseTracking() {
+  shouldTrack = false
+}
+
+export function resetTracking() {
+  shouldTrack = true
+}
 
 export class ReactiveEffect<T = any> {
   deps: Set<ReactiveEffect>[] = []
@@ -11,19 +20,21 @@ export class ReactiveEffect<T = any> {
   constructor(private fn: () => T, ) {}
 
   run() {
-    if (activeEffect) {
+    if (activeEffect === this) return
+    try {
       this.parent = activeEffect
+      activeEffect = this
+      cleanupEffect(this)
+      return this.fn()
+    } finally {
+      activeEffect = this.parent
+      this.parent = undefined
     }
-    activeEffect = this
-    cleanupEffect(this)
-    this.fn()
-    activeEffect = this.parent
-    this.parent = undefined
   }
 }
 
 export function track(target: object, key: unknown) {
-  if (activeEffect) {
+  if (shouldTrack && activeEffect) {
     let depsMap = targetMap.get(target)
     if (!depsMap) {
       targetMap.set(target, (depsMap = new Map()))
@@ -42,7 +53,7 @@ export function trigger(target: object, key: unknown) {
   if (!depsMap) return
   const dep = depsMap.get(key)
   if (!dep) return
-  dep.forEach(effect => effect.run())
+  ;[...dep].forEach(effect => effect.run())
 }
 
 export function effect(fn: () => any) {

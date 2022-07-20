@@ -1,12 +1,14 @@
 // import { effect, reactive } from 'vue'
 import { effect, reactive } from 'my-vue'
 
-const state = reactive({ flag: true, name: 'zhangsan', age: 13 })
+const arr = reactive([] as number[])
 
 effect(() => {
-  console.log(state.flag ? state.name : state.age)
+  arr.push(1)
 })
 
-// state.name = 'lisi'
-state.flag = false
-state.age = 15
+effect(() => {
+  arr.push(3)
+})
+
+console.log(arr)
