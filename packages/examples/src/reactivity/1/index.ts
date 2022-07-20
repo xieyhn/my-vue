@@ -1,14 +1,18 @@
 // import { effect, reactive } from 'vue'
-import { effect, reactive } from 'my-vue'
+import { effect, reactive, computed } from 'my-vue'
 
-const arr = reactive([] as number[])
+const state = reactive({ name: 'zhangsan' })
 
-effect(() => {
-  arr.push(1)
+const c = computed(() => {
+  console.log('computed')
+  return state.name + 'haha'
 })
 
 effect(() => {
-  arr.push(3)
+  console.log(c.value)
+  console.log(c.value)
 })
 
-console.log(arr)
+setTimeout(() => {
+  state.name = 'lishi'
+}, 1000);
