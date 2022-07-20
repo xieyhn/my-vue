@@ -1,4 +1,8 @@
+import { Dep } from './dep'
+
 type KeyToDepMap = Map<any, Set<ReactiveEffect>>
+
+export type EffectScheduler = (...args: any[]) => any
 
 const targetMap = new WeakMap<any, KeyToDepMap>()
 
@@ -14,13 +18,15 @@ export function resetTracking() {
 }
 
 export class ReactiveEffect<T = any> {
-  deps: Set<ReactiveEffect>[] = []
+  deps: Dep[] = []
   parent : ReactiveEffect | undefined = undefined
 
-  constructor(private fn: () => T, ) {}
+  constructor(
+    private fn: () => T,
+    public scheduler: EffectScheduler | null = null,
+  ) {}
 
   run() {
-    if (activeEffect === this) return
     try {
       this.parent = activeEffect
       activeEffect = this
@@ -43,8 +49,7 @@ export function track(target: object, key: unknown) {
     if (!dep) {
       depsMap.set(key, (dep = new Set()))
     }
-    dep.add(activeEffect)
-    activeEffect.deps.push(dep)
+    trackEffects(dep)
   }
 }
 
@@ -53,7 +58,26 @@ export function trigger(target: object, key: unknown) {
   if (!depsMap) return
   const dep = depsMap.get(key)
   if (!dep) return
-  ;[...dep].forEach(effect => effect.run())
+  triggerEffects(dep)
+}
+
+export function trackEffects(dep: Dep) {
+  if (activeEffect) {
+    dep.add(activeEffect)
+    activeEffect.deps.push(dep)
+  }
+} 
+
+export function triggerEffects(dep: Dep) {
+  ;[...dep].forEach(effect => {
+    if (activeEffect !== effect) {
+      if (effect.scheduler) {
+        effect.scheduler()
+      } else {
+        effect.run()
+      }
+    }
+  })
 }
 
 export function effect(fn: () => any) {
