@@ -2,5 +2,7 @@
   "name": "@my-vue/reactivity",
   "version": "0.0.0",
   "module": "src/index.ts",
-  "license": "MIT"
+  "dependencies": {
+    "@my-vue/shared": "0.0.0"
+  }
 }

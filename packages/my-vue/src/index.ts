@@ -1,5 +1,1 @@
-import { hello } from '@my-vue/reactivity'
-
-export {
-  hello
-}
+export * from '@my-vue/reactivity'
