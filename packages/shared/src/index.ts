@@ -1,3 +1,5 @@
+export const NOOP = () => {}
+
 export const isString = (val: unknown): val is string => typeof val === 'string'
 
 export function isObject(val: unknown) {
@@ -6,6 +8,10 @@ export function isObject(val: unknown) {
 
 export function isArray(val: unknown) {
   return Array.isArray(val)
+}
+
+export function isFunction(val: unknown): val is Function {
+  return typeof val === 'function'
 }
 
 const hasOwnProperty = Object.prototype.hasOwnProperty

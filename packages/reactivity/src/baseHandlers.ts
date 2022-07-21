@@ -63,7 +63,7 @@ function createSetter() {
 
     const res = Reflect.set(target, key, toRaw(value), receiver)
 
-    trigger(target, hadKey ? TriggerOpTypes.SET: TriggerOpTypes.ADD, key)
+    trigger(target, hadKey ? TriggerOpTypes.SET: TriggerOpTypes.ADD, key, value, oldValue)
 
     return res
   }
