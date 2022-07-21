@@ -1,6 +1,6 @@
-import { hasOwn, isArray } from '@my-vue/shared';
+import { hasOwn, isArray, isObject } from '@my-vue/shared';
 import { pauseTracking, resetTracking, track, trigger } from './effect'
-import { ReactiveFlags, Target, toRaw } from './reactive'
+import { reactive, ReactiveFlags, Target, toRaw } from './reactive'
 
 const arrayInstrumentations = createArrayInstrumentations()
 
@@ -44,7 +44,7 @@ function createGetter() {
     }
     const res = Reflect.get(target, key, receiver)
     track(target, key)
-    return res
+    return isObject(res) ? reactive(res) : res
   }
 }
 
