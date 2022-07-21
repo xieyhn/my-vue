@@ -50,7 +50,7 @@ function createGetter() {
 
 function createSetter() {
   return function set(target: Target, key: string | symbol, value: unknown, receiver: object) {
-    const res = Reflect.set(target, key, value, receiver)
+    const res = Reflect.set(target, key, toRaw(value), receiver)
     trigger(target, key)
     return res
   }
