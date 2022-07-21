@@ -4,10 +4,16 @@ type KeyToDepMap = Map<any, Set<ReactiveEffect>>
 
 export type EffectScheduler = (...args: any[]) => any
 
+export interface ReactiveEffectRunner<T = any> {
+  (): T
+  effect: ReactiveEffect
+}
+
 const targetMap = new WeakMap<any, KeyToDepMap>()
 
 export let activeEffect: ReactiveEffect | undefined
 export let shouldTrack = true
+export const ITERATE_KEY = Symbol('iterate')
 
 export function pauseTracking() {
   shouldTrack = false
@@ -22,7 +28,7 @@ export class ReactiveEffect<T = any> {
   parent : ReactiveEffect | undefined = undefined
 
   constructor(
-    private fn: () => T,
+    public fn: () => T,
     public scheduler: EffectScheduler | null = null,
   ) {}
 
@@ -30,6 +36,7 @@ export class ReactiveEffect<T = any> {
     try {
       this.parent = activeEffect
       activeEffect = this
+      shouldTrack = true
       cleanupEffect(this)
       return this.fn()
     } finally {
@@ -81,9 +88,13 @@ export function triggerEffects(dep: Dep) {
 }
 
 export function effect(fn: () => any) {
-  const _effect = new ReactiveEffect(fn)
+  const _effect = (fn as ReactiveEffectRunner).effect || new ReactiveEffect(fn)
 
   _effect.run()
+
+  const runner = _effect.run.bind(_effect) as ReactiveEffectRunner
+  runner.effect = _effect
+  return runner
 }
 
 function cleanupEffect(effect: ReactiveEffect) {
