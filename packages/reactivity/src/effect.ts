@@ -30,6 +30,7 @@ export class ReactiveEffect<T = any> {
     try {
       this.parent = activeEffect
       activeEffect = this
+      shouldTrack = true
       cleanupEffect(this)
       return this.fn()
     } finally {
