@@ -1,4 +1,6 @@
+import { isArray } from '@my-vue/shared'
 import { Dep } from './dep'
+import { TriggerOpTypes } from './operations'
 
 type KeyToDepMap = Map<any, Set<ReactiveEffect>>
 
@@ -60,11 +62,28 @@ export function track(target: object, key: unknown) {
   }
 }
 
-export function trigger(target: object, key: unknown) {
+export function trigger(target: object, type: TriggerOpTypes, key: unknown) {
   const depsMap = targetMap.get(target)
   if (!depsMap) return
-  const dep = depsMap.get(key)
-  if (!dep) return
+
+  const deps: (Dep | undefined)[] = []
+  deps.push(depsMap.get(key))
+
+  if (type === TriggerOpTypes.ADD) {
+    if (isArray(target)) {
+      deps.push(depsMap.get('length'))
+    } else {
+      deps.push(depsMap.get(ITERATE_KEY))
+    }
+  }
+
+  // 遍历添加并去重
+  const dep: Dep = new Set()
+  deps.forEach(_dep => {
+    if (!_dep) return
+    _dep.forEach(v => dep.add(v))
+  })
+  
   triggerEffects(dep)
 }
 
@@ -76,7 +95,7 @@ export function trackEffects(dep: Dep) {
 } 
 
 export function triggerEffects(dep: Dep) {
-  ;[...dep].forEach(effect => {
+  dep.forEach(effect => {
     if (activeEffect !== effect) {
       if (effect.scheduler) {
         effect.scheduler()
