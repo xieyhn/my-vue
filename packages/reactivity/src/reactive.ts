@@ -42,7 +42,7 @@ export function reactive<T extends object>(target: T): T {
 }
 
 export function isReactive(value: unknown) {
-  return (value && (value as Target)[ReactiveFlags.IS_REACTIVE])
+  return !!(value && (value as Target)[ReactiveFlags.IS_REACTIVE])
 }
 
 export function toRaw<T>(value: T): T {
