@@ -1,6 +1,7 @@
 import { isArray } from '@my-vue/shared'
 import { Dep } from './dep'
 import { TriggerOpTypes } from './operations'
+import { ComputedRefImpl } from './computed'
 
 type KeyToDepMap = Map<any, Set<ReactiveEffect>>
 
@@ -38,6 +39,7 @@ export class ReactiveEffect<T = any> {
   active = true
   deps: Dep[] = []
   parent : ReactiveEffect | undefined = undefined
+  computed?: ComputedRefImpl<T>
   private deferStop = false
 
   constructor(
@@ -46,9 +48,7 @@ export class ReactiveEffect<T = any> {
   ) {}
 
   run() {
-    if (!this.active) {
-      return this.fn()
-    }
+    if (!this.active) return this.fn()
 
     try {
       this.parent = activeEffect
@@ -127,7 +127,6 @@ export function trigger(
   
   triggerEffects(dep)
 }
-
 export function trackEffects(dep: Dep) {
   if (activeEffect) {
     dep.add(activeEffect)
@@ -136,15 +135,29 @@ export function trackEffects(dep: Dep) {
 } 
 
 export function triggerEffects(dep: Dep) {
-  dep.forEach(effect => {
-    if (activeEffect !== effect) {
-      if (effect.scheduler) {
-        effect.scheduler()
-      } else {
-        effect.run()
-      }
+  const effects = (isArray(dep) ? dep : [...dep]) as ReactiveEffect[]
+
+  // 计算属性所属的 ReactiveEffect 先执行产生计算属性的最新结果
+  for(let i = 0; i < effects.length; i++) {
+    if (effects[i].computed) {
+      triggerEffect(effects[i])
     }
-  })
+  }
+  for(let i = 0; i < effects.length; i++) {
+    if (!effects[i].computed) {
+      triggerEffect(effects[i])
+    }
+  }
+}
+
+export function triggerEffect(effect: ReactiveEffect) {
+  if (activeEffect !== effect) {
+    if (effect.scheduler) {
+      effect.scheduler()
+    } else {
+      effect.run()
+    }
+  }
 }
 
 export function effect(fn: () => any, options?: ReactiveEffectOptions) {

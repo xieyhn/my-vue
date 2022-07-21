@@ -1,18 +1,18 @@
-// import { effect, reactive, ReactiveEffect } from 'vue'
-import { effect, reactive, computed } from 'my-vue'
+import { effect, reactive, ReactiveEffect, computed } from 'vue'
+// import { effect, reactive, computed } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
-const value = reactive<{ foo?: number }>({})
-const cValue = computed(() => value.foo)
-let dummy
+let plusOneValues: number[] = []
+const n = reactive({ value: 0 })
+const plusOne = computed(() => n.value + 1)
 effect(() => {
-  dummy = cValue.value
+  n.value
+  plusOneValues.push(plusOne.value)
 })
-log('dummy1', dummy)
-// expect(dummy).toBe(undefined)
-value.foo = 1
-log('dummy2', cValue.value, dummy)
-// expect(dummy).toBe(1)
+plusOne.value
+n.value++
+log('plusOneValues', plusOneValues)
+// expect(plusOneValues).toMatchObject([1, 2, 2])
 
 // const obj = []
 // const proxy = new Proxy(obj, {
