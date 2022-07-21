@@ -21,7 +21,7 @@ class ComputedRefImpl<T> {
   get value() {
     trackEffects(this.dep)
     if (this._dirty) {
-      this._value = this.effect.run()
+      this._value = this.effect.fn()
       this._dirty = false
     }
     return this._value
