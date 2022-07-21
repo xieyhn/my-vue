@@ -127,6 +127,7 @@ export function trigger(
   
   triggerEffects(dep)
 }
+
 export function trackEffects(dep: Dep) {
   if (activeEffect) {
     dep.add(activeEffect)
@@ -135,7 +136,9 @@ export function trackEffects(dep: Dep) {
 } 
 
 export function triggerEffects(dep: Dep) {
-  const effects = (isArray(dep) ? dep : [...dep]) as ReactiveEffect[]
+  // 转换为数组，在遍历时会固定长度
+  // 否则使用 Set 在遍历过程中如新加元素，会导致无限循环
+  const effects = [...dep]
 
   // 计算属性所属的 ReactiveEffect 先执行产生计算属性的最新结果
   for(let i = 0; i < effects.length; i++) {
