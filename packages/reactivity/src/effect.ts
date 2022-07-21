@@ -11,6 +11,11 @@ export interface ReactiveEffectRunner<T = any> {
   effect: ReactiveEffect
 }
 
+export interface ReactiveEffectOptions {
+  lazy?: boolean
+  scheduler?: EffectScheduler
+}
+
 const targetMap = new WeakMap<any, KeyToDepMap>()
 
 export let activeEffect: ReactiveEffect | undefined
@@ -25,9 +30,15 @@ export function resetTracking() {
   shouldTrack = true
 }
 
+export function stop(runner: ReactiveEffectRunner) {
+  runner.effect.stop()
+}
+
 export class ReactiveEffect<T = any> {
+  active = true
   deps: Dep[] = []
   parent : ReactiveEffect | undefined = undefined
+  private deferStop = false
 
   constructor(
     public fn: () => T,
@@ -35,6 +46,10 @@ export class ReactiveEffect<T = any> {
   ) {}
 
   run() {
+    if (!this.active) {
+      return this.fn()
+    }
+
     try {
       this.parent = activeEffect
       activeEffect = this
@@ -44,6 +59,19 @@ export class ReactiveEffect<T = any> {
     } finally {
       activeEffect = this.parent
       this.parent = undefined
+      if (this.deferStop) {
+        this.stop()
+        this.deferStop = false
+      }
+    }
+  }
+
+  stop() {
+    if (activeEffect === this) {
+      this.deferStop = true
+    } else {
+      cleanupEffect(this)
+      this.active = false
     }
   }
 }
@@ -62,12 +90,25 @@ export function track(target: object, key: unknown) {
   }
 }
 
-export function trigger(target: object, type: TriggerOpTypes, key: unknown) {
+export function trigger(
+  target: object,
+  type: TriggerOpTypes,
+  key: unknown,
+  newValue?: unknown,
+  oldValue?: unknown
+) {
   const depsMap = targetMap.get(target)
   if (!depsMap) return
 
   const deps: (Dep | undefined)[] = []
   deps.push(depsMap.get(key))
+
+  // 数组长度减少
+  if (isArray(target) && key === 'length') {
+    for(let i = (newValue as number); i < (oldValue as number); i++) {
+      deps.push(depsMap.get((i - 1) + ''))
+    }
+  }
 
   if (type === TriggerOpTypes.ADD) {
     if (isArray(target)) {
@@ -106,10 +147,12 @@ export function triggerEffects(dep: Dep) {
   })
 }
 
-export function effect(fn: () => any) {
-  const _effect = (fn as ReactiveEffectRunner).effect || new ReactiveEffect(fn)
+export function effect(fn: () => any, options?: ReactiveEffectOptions) {
+  const _effect = (fn as ReactiveEffectRunner).effect || new ReactiveEffect(fn, options?.scheduler)
 
-  _effect.run()
+  if (!options || !options.lazy) {
+    _effect.run()
+  }
 
   const runner = _effect.run.bind(_effect) as ReactiveEffectRunner
   runner.effect = _effect
