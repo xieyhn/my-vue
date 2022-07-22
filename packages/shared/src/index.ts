@@ -6,12 +6,14 @@ export function isObject(val: unknown) {
   return val !== null && typeof val === 'object'
 }
 
-export function isArray(val: unknown) {
-  return Array.isArray(val)
-}
+export const isArray = Array.isArray
 
 export function isFunction(val: unknown): val is Function {
   return typeof val === 'function'
+}
+
+export function isUndefined(val: unknown): val is undefined {
+  return typeof val === 'undefined'
 }
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
@@ -27,3 +29,5 @@ export const isIntegerKey = (key: unknown) =>
 
 export const hasChanged = (value: any, oldValue: any): boolean =>
   !Object.is(value, oldValue)
+
+  export type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
