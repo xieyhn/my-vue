@@ -1,22 +1,20 @@
-// import { effect, reactive, ReactiveEffect, computed, ref } from 'vue'
-import { effect, reactive, computed, ref } from 'my-vue'
+// import { effect, reactive, ReactiveEffect, computed, ref, watch } from 'vue'
+import { effect, reactive, computed, ref, watch } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
-const array = reactive([1])
-let length = ''
-effect(() => {
-  length = ''
-  for (const key in array) {
-    length += key
-  }
+const state = reactive({ a: 1 })
+
+watch(state, (oldValue, newValue, onCleanup) => {
+  onCleanup(() => {
+    console.log('onCleanup')
+  })
+  console.log(oldValue, newValue)
+}, {
+  flush: 'sync'
 })
 
-log('length', length)
-// expect(length).toBe('0')
-array.push(1)
-log('length', length)
-// expect(length).toBe('01')
-
+state.a = 2
+state.a = 3
 
 
 // const obj = []

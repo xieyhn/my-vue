@@ -1,10 +1,9 @@
 {
-  "name": "my-vue",
+  "name": "@my-vue/runtime-core",
   "version": "0.0.0",
-  "license": "MIT",
   "module": "src/index.ts",
   "dependencies": {
     "@my-vue/reactivity": "0.0.0",
-    "@my-vue/runtime-core": "0.0.0"
+    "@my-vue/shared": "0.0.0"
   }
 }
