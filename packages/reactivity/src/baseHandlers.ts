@@ -2,6 +2,7 @@ import { hasChanged, hasOwn, isArray, isIntegerKey, isObject } from '@my-vue/sha
 import { ITERATE_KEY, pauseTracking, resetTracking, track, trigger } from './effect'
 import { TriggerOpTypes } from './operations';
 import { reactive, ReactiveFlags, Target, toRaw } from './reactive'
+import { isRef } from './ref';
 
 const arrayInstrumentations = createArrayInstrumentations()
 
@@ -40,11 +41,20 @@ function createGetter() {
     } else if (key === ReactiveFlags.RAW) {
       return target
     }
-    if (isArray(target) && hasOwn(arrayInstrumentations, key)) {
+
+    const targetIsArray = isArray(target)
+
+    if (targetIsArray && hasOwn(arrayInstrumentations, key)) {
       return Reflect.get(arrayInstrumentations, key, receiver)
     }
     const res = Reflect.get(target, key, receiver)
     track(target, key)
+
+    if (isRef(res)) {
+        // 数组里面的 ref 不解包
+        return targetIsArray && isIntegerKey(key) ? res : res.value;
+    }
+
     return isObject(res) ? reactive(res) : res
   }
 }
@@ -54,6 +64,11 @@ function createSetter() {
     const oldValue = (target as any)[key]
 
     if (!hasChanged(oldValue, value)) {
+      return true
+    }
+
+    if (isRef(oldValue) && !isRef(value)) {
+      oldValue.value = value
       return true
     }
 

@@ -17,6 +17,8 @@ export class ComputedRefImpl<T> {
   public readonly effect: ReactiveEffect
 
   public _dirty = true
+
+  public readonly __v_isRef = true
   
   constructor(getter: ComputedGetter<T>, private readonly _setter: ComputedSetter<T>) {
     this.effect = new ReactiveEffect(getter, () => {
