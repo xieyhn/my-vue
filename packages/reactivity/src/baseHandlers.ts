@@ -11,13 +11,21 @@ function createArrayInstrumentations() {
   ;(['includes', 'indexOf', 'lastIndexOf'] as const).forEach(key => {
     instrumentations[key] = function (this: unknown[], ...args: unknown[]) {
       const arr = toRaw(this)
-      // 收集 length 依赖
+
+      // 使用 proxy 调用 indexOf 方法会触发 length 及每个索引的更新
+      // 但此时是拿到源对象来执行的方法，因此需要手动收集每个元素及 length 的依赖
       const l = this.length
       for(let i = 0; i < l; i++) {
         // 收集每一项作为依赖
         track(arr, i + '')
       }
-      return (arr as any)[key](...args)
+
+      const res = (arr as any)[key](...args)
+      if (res === -1 || res === false) {
+        return (arr as any)[key](...args.map(toRaw))
+      } else {
+        return res
+      }
     }
   })
 
