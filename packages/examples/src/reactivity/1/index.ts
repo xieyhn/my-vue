@@ -2,30 +2,20 @@
 import { effect, reactive, computed, ref } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
-const a = ref(1)
-const obj = reactive({
-  a,
-  b: {
-    c: a
+const array = reactive([1])
+let length = ''
+effect(() => {
+  length = ''
+  for (const key in array) {
+    length += key
   }
 })
 
-let dummy1: number
-let dummy2: number
-
-effect(() => {
-  log('effect')
-  dummy1 = obj.a
-  dummy2 = obj.b.c
-})
-
-a.value++
-log('add1', dummy1, dummy2)
-obj.a++
-log('add2', dummy1, dummy2)
-// obj.b.c++
-// assertDummiesEqualTo(4)
-
+log('length', length)
+// expect(length).toBe('0')
+array.push(1)
+log('length', length)
+// expect(length).toBe('01')
 
 
 

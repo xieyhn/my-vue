@@ -1,4 +1,4 @@
-import { isArray } from '@my-vue/shared'
+import { isArray, isIntegerKey, isObject } from '@my-vue/shared'
 import { Dep } from './dep'
 import { TriggerOpTypes } from './operations'
 import { ComputedRefImpl } from './computed'
@@ -111,9 +111,9 @@ export function trigger(
   }
 
   if (type === TriggerOpTypes.ADD) {
-    if (isArray(target)) {
+    if (isArray(target) && isIntegerKey(key)) {
       deps.push(depsMap.get('length'))
-    } else {
+    } else if (isObject(target)) {
       deps.push(depsMap.get(ITERATE_KEY))
     }
   }
