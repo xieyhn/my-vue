@@ -1,31 +1,22 @@
-// import { effect, reactive, ReactiveEffect, computed, ref } from 'vue'
-import { effect, reactive, computed, ref } from 'my-vue'
+// import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect } from 'vue'
+import { effect, reactive, computed, ref, watch, watchEffect, nextTick } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
-const a = ref(1)
-const obj = reactive({
-  a,
-  b: {
-    c: a
-  }
-})
+async function main() {
+  const src = reactive({
+    count: 0
+  })
+  let dummy
+  watch(src, ({ count }) => {
+    log(count)
+    dummy = count
+  })
+  src.count++
+  await nextTick()
+  log('dummy1', dummy)
+}
 
-let dummy1: number
-let dummy2: number
-
-effect(() => {
-  log('effect')
-  dummy1 = obj.a
-  dummy2 = obj.b.c
-})
-
-a.value++
-log('add1', dummy1, dummy2)
-obj.a++
-log('add2', dummy1, dummy2)
-// obj.b.c++
-// assertDummiesEqualTo(4)
-
+main()
 
 
 

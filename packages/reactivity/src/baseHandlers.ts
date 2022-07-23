@@ -113,7 +113,11 @@ const deleteProperty = createDeleteProperty()
 const has = createHas()
 
 function ownKeys(target: object) {
-  track(target, ITERATE_KEY)
+  if (isArray(target)) {
+    track(target, 'length')
+  } else {
+    track(target, ITERATE_KEY)
+  }
   return Reflect.ownKeys(target)
 }
 

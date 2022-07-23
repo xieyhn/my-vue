@@ -1,6 +1,7 @@
 import { ReactiveEffect, trackEffects, triggerEffects } from "./effect";
 import { Dep } from './dep'
 import { isFunction, NOOP } from "@my-vue/shared";
+import { Ref } from "./ref";
 
 export type ComputedGetter<T> = (...args: any[]) => T
 export type ComputedSetter<T> = (v: T) => void
@@ -8,6 +9,14 @@ export type ComputedSetter<T> = (v: T) => void
 export interface WritableComputedOptions<T> {
   get: ComputedGetter<T>
   set: ComputedSetter<T>
+}
+
+export interface WritableComputedRef<T> extends Ref<T> {
+  readonly effect: ReactiveEffect<T>
+}
+
+export interface ComputedRef<T = any> extends WritableComputedRef<T> {
+  readonly value: T
 }
 
 export class ComputedRefImpl<T> {

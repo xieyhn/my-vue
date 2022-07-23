@@ -1,4 +1,4 @@
-import { isArray } from '@my-vue/shared'
+import { isArray, isIntegerKey, isObject } from '@my-vue/shared'
 import { Dep } from './dep'
 import { TriggerOpTypes } from './operations'
 import { ComputedRefImpl } from './computed'
@@ -42,6 +42,9 @@ export class ReactiveEffect<T = any> {
   computed?: ComputedRefImpl<T>
   private deferStop = false
 
+  // 通过外部注册一个停止时的回调，在 stop 方法调用时候调用
+  onStop?: () => void
+
   constructor(
     public fn: () => T,
     public scheduler: EffectScheduler | null = null,
@@ -71,6 +74,7 @@ export class ReactiveEffect<T = any> {
       this.deferStop = true
     } else {
       cleanupEffect(this)
+      if (this.onStop) this.onStop()
       this.active = false
     }
   }
@@ -111,9 +115,9 @@ export function trigger(
   }
 
   if (type === TriggerOpTypes.ADD) {
-    if (isArray(target)) {
+    if (isArray(target) && isIntegerKey(key)) {
       deps.push(depsMap.get('length'))
-    } else {
+    } else if (isObject(target)) {
       deps.push(depsMap.get(ITERATE_KEY))
     }
   }
