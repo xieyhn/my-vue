@@ -1,23 +1,24 @@
 // import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect, render, h, createVNode } from 'vue'
-import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol } from 'my-vue'
+import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol, FragmentSymbol } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
 const contianer = document.querySelector('#app') as HTMLElement
 
 const vnode1 = createVNode(
-  'h1',
+  FragmentSymbol,
   null,
   [
-    createVNode('p', null, '这是p1')
+    createVNode('h1', null, 'h1'),
+    createVNode('h2', null, 'h2'),
   ]
 )
 
 const vnode2 = createVNode(
-  'h1',
+  FragmentSymbol,
   null,
   [
-    createVNode('p', null, '这是p2'),
-    createVNode('p', null, '这是p3')
+    createVNode('h1', null, 'h1'),
+    createVNode('h2', null, 'h3'),
   ]
 )
 
@@ -26,7 +27,6 @@ render(vnode1, contianer)
 setTimeout(() => {
   render(vnode2, contianer)
 }, 1000);
-
 
 // const obj = []
 // const proxy = new Proxy(obj, {

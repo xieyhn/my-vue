@@ -1,6 +1,7 @@
 import { isArray, isString, ShapeFlags } from "@my-vue/shared"
 
 export const TextSymbol = Symbol('Text')
+export const FragmentSymbol = Symbol('Fragment')
 
 export type VNodeTypes = string | symbol
 
