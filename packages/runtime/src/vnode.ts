@@ -1,5 +1,5 @@
 import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared"
-import { ComponentInstance } from "./component"
+import { ComponentInternalInstance } from "./component"
 
 export const TextSymbol = Symbol('Text')
 export const FragmentSymbol = Symbol('Fragment')
@@ -19,7 +19,7 @@ export interface VNode {
   // 真实元素，普通元素，文本节点
   el?: HTMLElement | Text
   // 组件实例
-  component?: ComponentInstance
+  component?: ComponentInternalInstance
 }
 
 export function isVNode(val: unknown): val is VNode {

@@ -1,8 +1,10 @@
 import { reactive } from '@my-vue/reactivity';
 import { hasOwn } from '@my-vue/shared';
-import { ComponentInstance } from './component';
+import { ComponentInternalInstance } from './component';
 
-export function initProps(instance: ComponentInstance, rawProps: Record<string, any> | null) {
+export function initProps(instance: ComponentInternalInstance) {
+  const { vnode: { props: rawProps } } = instance
+
   if (!rawProps) return
 
   const props: Record<string, any> = {}
