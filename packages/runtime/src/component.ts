@@ -7,4 +7,8 @@ export interface ComponentInstance {
   subTree?: VNode
   isMounted: boolean
   update?: () => void
+  propsOptions: Record<string, any>
+  props?: Record<string, any>
+  attrs?: Record<string, any>
+  proxy?: any
 }

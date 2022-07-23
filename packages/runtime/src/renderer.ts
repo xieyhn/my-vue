@@ -1,6 +1,7 @@
 import { ReactiveEffect } from "@my-vue/reactivity";
-import { isString, ShapeFlags } from "@my-vue/shared";
+import { hasOwn, isString, ShapeFlags } from "@my-vue/shared";
 import { ComponentInstance } from "./component";
+import { initProps } from "./componentProps";
 import { patchProp } from "./patchProp";
 import { queueJob } from "./scheduler";
 import { TextSymbol, VNode, isSameVNode, normalize, FragmentSymbol } from "./vnode";
@@ -61,7 +62,7 @@ export function unmount(vnode: VNode | undefined) {
  * 挂载组件
  */
 function mountComponent(contianer: HTMLElement, vnode: VNode) {
-  const { setup, render } = vnode.type as any
+  const { setup, render, props: propsOptions } = vnode.type as any
   const state = setup()
 
   // 组件实例
@@ -69,18 +70,51 @@ function mountComponent(contianer: HTMLElement, vnode: VNode) {
     state,
     vnode,
     isMounted: false,
+    propsOptions
   }
 
   vnode.component = instance
 
+  initProps(instance, vnode.props)
+
+  const publicPropertyMap: Record<string | symbol, (ins: ComponentInstance) => any> = {
+    $attrs: (ins: ComponentInstance) => ins.attrs
+  }
+
+  instance.proxy = new Proxy(instance, {
+    get(target, key) {
+      const { state, props } = target
+      if (state && hasOwn(state, key)) {
+        return state[key]
+      } else if (props && hasOwn(props, key)) {
+        return props[key]
+      }
+      const getter = publicPropertyMap[key]
+      if (getter) return getter
+
+      return undefined
+    },
+    set(target, key, value) {
+      const { state, props } = target
+      if (state && hasOwn(state, key)) {
+        state[key] = value
+        return true
+      } else if (props && hasOwn(props, key)) {
+        console.warn('不允许修改属性')
+        return false
+      }
+      return false
+    },
+  })
+
   const componentUpdate = () => {
     // normalize!!!
     if (!instance.isMounted) {
-      instance.subTree = normalize(render.call(instance.state))
+      instance.subTree = normalize(render.call(instance.proxy!))
       patch(contianer, null, instance.subTree!)
       instance.isMounted = true
     } else {
-      const newSubTree = normalize(render.call(instance.state))
+      const newSubTree = normalize(render.call(instance.proxy!))
       patch(contianer, instance.subTree!, newSubTree)
       instance.subTree = newSubTree
     }
@@ -199,7 +233,6 @@ function processComponent(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
     mountComponent(contianer, n2)
   } else {
     // TODO: 更新组件
-    
   }
 }
 

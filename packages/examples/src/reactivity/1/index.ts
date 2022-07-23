@@ -6,6 +6,9 @@ const contianer = document.querySelector('#app') as HTMLElement
 
 const vnode1 = createVNode(
   {
+    props: {
+      title: String
+    },
     setup() {
       const data = reactive({ a: 1 })
 
@@ -18,20 +21,24 @@ const vnode1 = createVNode(
       console.log('render')
       return createVNode(FragmentSymbol, null, [
         createVNode('p', null, ['这是内容']),
-        createVNode('p', null, this.data.a + '')
+        createVNode('p', null, this.data.a + ''),
+        createVNode('p', null, this.title + '')
       ])
     }
   },
-  null
+  {
+    title: 'nihao',
+    a1: 'attr1'
+  }
 )
 
 const vnode2 = createVNode(FragmentSymbol, null, 'h1')
 
 render(vnode1, contianer)
 
-setTimeout(() => {
-  render(vnode2, contianer)
-}, 1000);
+// setTimeout(() => {
+//   render(vnode2, contianer)
+// }, 1000);
 // const obj = []
 // const proxy = new Proxy(obj, {
 //   get(target, key, receiver) {
