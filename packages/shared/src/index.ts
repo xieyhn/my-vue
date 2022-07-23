@@ -1,3 +1,5 @@
+export * from './shapeFlags'
+
 export const NOOP = () => {}
 
 export const objectToString = Object.prototype.toString
@@ -40,3 +42,6 @@ export const hasChanged = (value: any, oldValue: any): boolean =>
 export type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N
 
 export const EMPTY_OBJ: { readonly [key: string]: any } = {}
+
+const hyphenateRE = /\B([A-Z])/g
+export const hyphenate = (str: string) =>str.replace(hyphenateRE, '-$1').toLowerCase()

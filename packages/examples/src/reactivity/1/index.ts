@@ -1,23 +1,31 @@
-// import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect } from 'vue'
-import { effect, reactive, computed, ref, watch, watchEffect, nextTick } from 'my-vue'
+// import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect, render, h, createVNode } from 'vue'
+import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
-async function main() {
-  const src = reactive({
-    count: 0
-  })
-  let dummy
-  watch(src, ({ count }) => {
-    log(count)
-    dummy = count
-  })
-  src.count++
-  await nextTick()
-  log('dummy1', dummy)
-}
+const contianer = document.querySelector('#app') as HTMLElement
 
-main()
+const vnode1 = createVNode(
+  'h1',
+  null,
+  [
+    createVNode('p', null, '这是p1')
+  ]
+)
 
+const vnode2 = createVNode(
+  'h1',
+  null,
+  [
+    createVNode('p', null, '这是p2'),
+    createVNode('p', null, '这是p3')
+  ]
+)
+
+render(vnode1, contianer)
+
+setTimeout(() => {
+  render(vnode2, contianer)
+}, 1000);
 
 
 // const obj = []

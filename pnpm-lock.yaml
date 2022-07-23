@@ -30,10 +30,10 @@ importers:
   packages/my-vue:
     specifiers:
       '@my-vue/reactivity': 0.0.0
-      '@my-vue/runtime-core': 0.0.0
+      '@my-vue/runtime': 0.0.0
     dependencies:
       '@my-vue/reactivity': link:../reactivity
-      '@my-vue/runtime-core': link:../runtime-core
+      '@my-vue/runtime': link:../runtime
 
   packages/reactivity:
     specifiers:
@@ -41,7 +41,7 @@ importers:
     dependencies:
       '@my-vue/shared': link:../shared
 
-  packages/runtime-core:
+  packages/runtime:
     specifiers:
       '@my-vue/reactivity': 0.0.0
       '@my-vue/shared': 0.0.0
