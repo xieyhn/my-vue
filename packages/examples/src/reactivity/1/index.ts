@@ -5,29 +5,33 @@ const log = console.log.bind(console, '[x]')
 const contianer = document.querySelector('#app') as HTMLElement
 
 const vnode1 = createVNode(
-  FragmentSymbol,
-  null,
-  [
-    createVNode('h1', null, 'h1'),
-    createVNode('h2', null, 'h2'),
-  ]
+  {
+    setup() {
+      const data = reactive({ a: 1 })
+
+      return {
+        data
+      }
+    },
+
+    render() {
+      console.log('render')
+      return createVNode(FragmentSymbol, null, [
+        createVNode('p', null, ['这是内容']),
+        createVNode('p', null, this.data.a + '')
+      ])
+    }
+  },
+  null
 )
 
-const vnode2 = createVNode(
-  FragmentSymbol,
-  null,
-  [
-    createVNode('h1', null, 'h1'),
-    createVNode('h2', null, 'h3'),
-  ]
-)
+const vnode2 = createVNode(FragmentSymbol, null, 'h1')
 
 render(vnode1, contianer)
 
 setTimeout(() => {
   render(vnode2, contianer)
 }, 1000);
-
 // const obj = []
 // const proxy = new Proxy(obj, {
 //   get(target, key, receiver) {
