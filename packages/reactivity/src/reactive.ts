@@ -5,7 +5,8 @@ import { UnwrapRefSimple } from './ref'
 
 export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive',
-  RAW = '__v_raw'
+  RAW = '__v_raw',
+  SKIP = '__v_skip'
 }
 
 export interface Target {

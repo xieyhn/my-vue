@@ -1,5 +1,5 @@
 {
-  "name": "@my-vue/runtime-core",
+  "name": "@my-vue/runtime",
   "version": "0.0.0",
   "module": "src/index.ts",
   "dependencies": {

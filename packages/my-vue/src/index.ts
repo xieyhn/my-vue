@@ -1,2 +1,2 @@
 export * from '@my-vue/reactivity'
-export * from '@my-vue/runtime-core'
+export * from '@my-vue/runtime'

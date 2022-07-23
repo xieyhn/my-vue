@@ -5,6 +5,6 @@
   "module": "src/index.ts",
   "dependencies": {
     "@my-vue/reactivity": "0.0.0",
-    "@my-vue/runtime-core": "0.0.0"
+    "@my-vue/runtime": "0.0.0"
   }
 }
