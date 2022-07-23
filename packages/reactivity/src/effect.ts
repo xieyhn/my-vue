@@ -42,6 +42,9 @@ export class ReactiveEffect<T = any> {
   computed?: ComputedRefImpl<T>
   private deferStop = false
 
+  // 通过外部注册一个停止时的回调，在 stop 方法调用时候调用
+  onStop?: () => void
+
   constructor(
     public fn: () => T,
     public scheduler: EffectScheduler | null = null,
@@ -71,6 +74,7 @@ export class ReactiveEffect<T = any> {
       this.deferStop = true
     } else {
       cleanupEffect(this)
+      if (this.onStop) this.onStop()
       this.active = false
     }
   }

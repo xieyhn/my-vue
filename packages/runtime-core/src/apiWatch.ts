@@ -1,7 +1,8 @@
-import { ComputedRef, isReactive, isRef, ReactiveEffect, Ref } from '@my-vue/reactivity';
-import { EMPTY_OBJ, isArray, isFunction, isObject, isPlainObject, NOOP } from '@my-vue/shared';
+import { ComputedRef, EffectScheduler, isReactive, isRef, ReactiveEffect, Ref } from '@my-vue/reactivity';
+import { EMPTY_OBJ, hasChanged, isArray, isFunction, isObject, isPlainObject, NOOP } from '@my-vue/shared';
+import { queuePostFlushCb, queuePreFlushCb } from './scheduler';
 
-export type WatchSource<T = any> = Ref<T> | ComputedRef<T> | (() => T) | object
+export type WatchSource<T = any> = Ref<T> | ComputedRef<T> | ((onCleanup: OnCleanup) => T) | T
 
 export type WatchCallback<V = any> = (
   value: V,
@@ -22,13 +23,42 @@ export interface WatchOptions extends WatchOptionsBase {
 
 export type WatchStopHandle = () => void
 
+export type WatchEffect = (onCleanup: OnCleanup) => void
+
 export function watch<T>(
   source: WatchSource<T>,
   cb: WatchCallback<T>,
   options?: WatchOptions
 ): WatchStopHandle {
-  let { deep, immediate } = options || EMPTY_OBJ
+  return doWatch(source, cb, options)
+}
+
+export function watchEffect(
+  effect: WatchEffect,
+  options?: WatchOptionsBase
+): WatchStopHandle {
+  return doWatch(effect, null, options)
+}
+
+export function watchPostEffect(effect: WatchEffect) {
+  return doWatch(effect, null, { flush: 'post' })
+}
+
+export function watchPreEffect(effect: WatchEffect) {
+  return doWatch(effect, null, { flush: 'pre' })
+}
+
+function doWatch<T>(
+  source: WatchSource<T>,
+  cb: WatchCallback<T> | null,
+  { deep, immediate, flush } : WatchOptions = EMPTY_OBJ
+) {
   let getter: () => any
+  let cleanup: () => void
+  let onCleanup: OnCleanup = (fn: () => void) => {
+    // effect.onStop 在 effect 停止监听时，也要触发一次 cleanup
+    cleanup = effect.onStop = fn
+  }
 
   if (isRef(source)) {
     getter =  () => source.value
@@ -36,7 +66,7 @@ export function watch<T>(
     getter = () => source
     deep = true
   } else if (isFunction(source)) {
-    getter = source
+    getter = () => source(onCleanup) 
   } else {
     getter = NOOP
   }
@@ -46,23 +76,40 @@ export function watch<T>(
     const baseGetter = getter
     getter = () => traverse(baseGetter())
   }
-
-  let cleanup: () => void
-  let onCleanup: OnCleanup = (fn: () => void) => {
-    cleanup = fn
-  }
   
   let oldValue: T
 
   const job = () => {
     if (!effect.active) return
     if (cleanup) cleanup()
-    const newValue = effect.run()
-    cb(newValue, oldValue, onCleanup)
-    oldValue = newValue
-  } 
+    
+    if (cb) {
+      const newValue = effect.run()
+      // 变化后才触发，deep 时也触发，无法比较同一个对象
+      if (deep || hasChanged(newValue, oldValue)) {
+        cb(newValue, oldValue, onCleanup)
+      }
+      oldValue = newValue
+    } else {
+      // 没有传递回调的情况，是 watchEffect 使用方式
+      effect.run()
+    }
+  }
 
-  const effect = new ReactiveEffect(getter, job)
+  let scheduler: EffectScheduler
+
+  // sync 立即同步执行，不放在下一事件循环
+  if (flush === 'sync') {
+    scheduler = job
+  } else if (flush === 'post') {
+    // post 在 dom 更新后
+    scheduler = () => queuePostFlushCb(job)
+  } else {
+    // 默认值 pre，在 dom 更新前
+    scheduler = () => queuePreFlushCb(job)
+  }
+
+  const effect = new ReactiveEffect(getter, scheduler)
 
   if (immediate) {
     job()
@@ -75,7 +122,7 @@ export function watch<T>(
   }
 }
 
-export function traverse(value: unknown, seen: Set<unknown> = new Set()) {
+function traverse(value: unknown, seen: Set<unknown> = new Set()) {
   if (!isObject(value)) {
     return value
   }
