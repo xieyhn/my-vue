@@ -9,6 +9,8 @@ let isFlushing = false
 // 标记是否准备执行还没执行队列，即调用了 Promise.then 但还没走到这个微任务时，值为 true
 let isFlushPending = false
 
+const queue: SchedulerJob[] = []
+
 // 当前事件循环还未执行的回调数组
 const pendingPreFlushCbs: SchedulerJob[] = []
 // 当前事件循环正在执行的回调数组，开始执行时，会将 pendingPreFlushCbs 值拿过来依次执行并重置 pendingPreFlushCbs
@@ -47,6 +49,14 @@ export function queuePreFlushCb(cb: SchedulerJob) {
   queueCb(cb, activePreFlushCbs, pendingPreFlushCbs)
 }
 
+// 保存 render 函数内容，在 pre 和 post 中间执行
+export function queueJob(job: SchedulerJob) {
+  if (!queue.includes(job)) {
+    queue.push(job)
+  }
+  queueFlush()
+}
+
 export function queuePostFlushCb(cb: SchedulerJobs) {
   queueCb(cb, activePostFlushCbs, pendingPostFlushCbs)
 }
@@ -68,6 +78,10 @@ function flushJobs() {
   flushPreFlushCbs()
 
   // 这里会执行 render 等，先省略逻辑
+  for(let i = 0; i < queue.length; i++) {
+    queue[i]()
+  }
+  queue.length = 0
 
   // 执行 post
   flushPostFlushCbs()

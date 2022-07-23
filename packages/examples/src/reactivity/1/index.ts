@@ -1,33 +1,45 @@
 // import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect, render, h, createVNode } from 'vue'
-import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol } from 'my-vue'
+import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol, FragmentSymbol } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
 const contianer = document.querySelector('#app') as HTMLElement
 
 const vnode1 = createVNode(
-  'h1',
-  null,
-  [
-    createVNode('p', null, '这是p1')
-  ]
+  {
+    props: {
+      title: String
+    },
+    setup() {
+      const data = reactive({ a: 1 })
+
+      return {
+        data
+      }
+    },
+
+    render() {
+      console.log('render')
+      return createVNode(FragmentSymbol, null, [
+        createVNode('p', null, ['这是内容']),
+        createVNode('p', null, this.data.a + ''),
+        createVNode('p', null, this.title + ''),
+        createVNode('p', null, this.$attrs.a1 + '')
+      ])
+    }
+  },
+  {
+    title: 'nihao',
+    a1: 'attr1'
+  }
 )
 
-const vnode2 = createVNode(
-  'h1',
-  null,
-  [
-    createVNode('p', null, '这是p2'),
-    createVNode('p', null, '这是p3')
-  ]
-)
+const vnode2 = createVNode(FragmentSymbol, null, 'h1')
 
 render(vnode1, contianer)
 
-setTimeout(() => {
-  render(vnode2, contianer)
-}, 1000);
-
-
+// setTimeout(() => {
+//   render(vnode2, contianer)
+// }, 1000);
 // const obj = []
 // const proxy = new Proxy(obj, {
 //   get(target, key, receiver) {

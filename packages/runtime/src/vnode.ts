@@ -1,8 +1,11 @@
-import { isArray, isString, ShapeFlags } from "@my-vue/shared"
+import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared"
+import { ComponentInternalInstance } from "./component"
 
 export const TextSymbol = Symbol('Text')
+export const FragmentSymbol = Symbol('Fragment')
 
-export type VNodeTypes = string | symbol
+// object 组件
+export type VNodeTypes = string | symbol | object
 
 export interface VNode {
   __v_isVNode: true
@@ -15,6 +18,8 @@ export interface VNode {
   children: unknown
   // 真实元素，普通元素，文本节点
   el?: HTMLElement | Text
+  // 组件实例
+  component?: ComponentInternalInstance
 }
 
 export function isVNode(val: unknown): val is VNode {
@@ -31,7 +36,11 @@ export function createVNode(
   children: unknown = null
 ): VNode {
   // 字符串为基本元素类型
-  let shapeFlag = isString(type) ? ShapeFlags.ELEMENT : 0
+  let shapeFlag = 
+    isString(type) 
+      ? ShapeFlags.ELEMENT 
+      : isObject(type) ? ShapeFlags.STATEFUL_COMPONENT
+      : 0
 
   // 判断子节点的类型
   if (children) {
