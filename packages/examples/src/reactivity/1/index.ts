@@ -22,7 +22,8 @@ const vnode1 = createVNode(
       return createVNode(FragmentSymbol, null, [
         createVNode('p', null, ['这是内容']),
         createVNode('p', null, this.data.a + ''),
-        createVNode('p', null, this.title + '')
+        createVNode('p', null, this.title + ''),
+        createVNode('p', null, this.$attrs.a1 + '')
       ])
     }
   },

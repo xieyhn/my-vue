@@ -89,8 +89,9 @@ function mountComponent(contianer: HTMLElement, vnode: VNode) {
       } else if (props && hasOwn(props, key)) {
         return props[key]
       }
+
       const getter = publicPropertyMap[key]
-      if (getter) return getter
+      if (getter) return getter(instance)
 
       return undefined
     },
