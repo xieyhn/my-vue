@@ -14,6 +14,7 @@ export interface ComponentInternalInstance {
   attrs?: Record<string, any>
   proxy?: any
   render?: () => VNode
+  next?: VNode
 }
 
 /**

@@ -6,20 +6,34 @@ const contianer = document.querySelector('#app') as HTMLElement
 
 const outerState = reactive({ title: '你好2' })
 
-const vnode2 = createVNode({
+const myComponent = {
+  props: {
+    title: ''
+  },
   render() {
-    return createVNode({
-      props: {
-        title: 'nihao'
-      },
-      render() {
-        return createVNode('h1', null, this.title)
-      }
-    }, { props: { title: outerState.title } })
+    return createVNode('h1', null, this.title)
+  }
+}
+
+const vnode1 = createVNode({
+  setup() {
+    const state = reactive({ title: '你好' })
+
+    return {
+      state
+    }
+  },
+  render() {
+    return createVNode(FragmentSymbol, null, [
+      createVNode('button', {
+        onClick: () => { this.state.title = '你好222' } 
+      }, '点击切换'),
+      createVNode(myComponent, { props: { title: this.state.title }, })
+    ])
   }
 })
 
-render(vnode2, contianer)
+render(vnode1, contianer)
 
 
 

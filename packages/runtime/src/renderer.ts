@@ -1,6 +1,7 @@
 import { ReactiveEffect } from "@my-vue/reactivity";
 import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared";
 import { ComponentInternalInstance, createComponentInstance, setupComponent } from "./component";
+import { hasPropsChanged, updateProps } from "./componentProps";
 import { patchProp } from "./patchProp";
 import { queueJob } from "./scheduler";
 import { TextSymbol, VNode, isSameVNode, normalize, FragmentSymbol } from "./vnode";
@@ -119,6 +120,7 @@ function mountChildren(vnode: VNode) {
  * 组件卸载
  */
 function unmountComponent(vnode: VNode) {
+  console.log('组件卸载')
   unmount(vnode.component?.subTree)
 }
 
@@ -145,6 +147,14 @@ function setupRenderEffect(container: HTMLElement, instance: ComponentInternalIn
       mount(container, instance.subTree)
       instance.isMounted = true
     } else {
+      if (instance.next) {
+        // updateComponentPreRender -----------------
+        const next = instance.next
+        instance.vnode = next
+        instance.next = undefined
+        // 更新实例上的 props，接着走 render
+        updateProps(instance.props!, next.props?.props as any || {})
+      }
       const newSubTree = instance.render!.call(instance.proxy!)
       patch(container, instance.subTree!, newSubTree)
       instance.subTree = newSubTree
@@ -185,7 +195,8 @@ function patchProps(
  * 比对元素的子节点
  */
 function patchChildren(container: HTMLElement, n1: VNode, n2: VNode) {
-  const c2 = n2.children
+  const c1 = n1.children as VNode[] | null
+  const c2 = n2.children as VNode[] | null
 
   if (!c2) {
     // 新 空
@@ -202,12 +213,14 @@ function patchChildren(container: HTMLElement, n1: VNode, n2: VNode) {
   } else {
     // 新 数组
     if (n1.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      // TODO: diff
-      unmountChildren(n1)
+      // TODO: diff，目前假设长度相同，且只做修改
+      for(let i = 0; i < c2.length; i++) {
+        patch(container, c1![i], c2[i])
+      }
     } else if (n1.shapeFlag * ShapeFlags.TEXT_CHILDREN) {
       container.textContent = ''
+      mountChildren(n2)
     }
-    mountChildren(n2)
   }
 }
 
@@ -235,8 +248,41 @@ function processFragment(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
     // 新增
     mount(contianer, n2)
   } else {
+    n2.el = n1.el
     // 子节点更新
     patchChildren(contianer, n1, n2)
+  }
+}
+
+/**
+ * 是否需要重新更新组件
+ */
+function shouldUpdateComponent(n1: VNode, n2: VNode) {
+  const { props: props1, children: children1 } = n1
+  const { props: props2, children: children2 } = n2
+
+  // children：插槽变化后需要重新渲染
+  if (children1 || children2) {
+    return true
+  }
+  
+  const preProps = props1?.props || {}
+  const nextProps = props2?.props || {}
+
+  return hasPropsChanged(preProps as any, nextProps as any)
+}
+
+/**
+ * processComponent 分支逻辑，更新组件
+ */
+function updateComponent(n1: VNode, n2: VNode) {
+  const instance = n2.component = n1!.component
+
+  if (shouldUpdateComponent(n1, n2)) {
+    instance!.next = n2
+
+    // To: setupRenderEffect => componentUpdate
+    instance!.update?.()
   }
 }
 
@@ -247,8 +293,7 @@ function processComponent(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
   if (n1 === null) {
     mount(contianer, n2)
   } else {
-    // TODO: 更新组件
-    console.log('// TODO: 更新组件')
+    updateComponent(n1, n2)
   }
 }
 
