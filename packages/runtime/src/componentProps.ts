@@ -3,8 +3,8 @@ import { hasOwn } from '@my-vue/shared';
 import { ComponentInternalInstance } from './component';
 
 export function initProps(instance: ComponentInternalInstance) {
-  const { vnode: { props: rawProps } } = instance
-
+  const { vnode } = instance
+  const rawProps = (vnode.props && vnode.props.props) as Record<string, any> | undefined
   if (!rawProps) return
 
   const props: Record<string, any> = {}

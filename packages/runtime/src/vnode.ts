@@ -1,4 +1,4 @@
-import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared"
+import { isArray, isNumber, isObject, isString, ShapeFlags } from "@my-vue/shared"
 import { ComponentInternalInstance } from "./component"
 
 export const TextSymbol = Symbol('Text')
@@ -32,7 +32,7 @@ export function isSameVNode(n1: VNode, n2: VNode) {
 
 export function createVNode(
   type: VNodeTypes,
-  props: Record<string, unknown> | null,
+  props: Record<string, unknown> | null = null,
   children: unknown = null
 ): VNode {
   // 字符串为基本元素类型
@@ -69,13 +69,10 @@ export function createVNode(
 }
 
 export function normalize(value: unknown) {
-  if (isString(value)) {
-    return createVNode(TextSymbol, null, value)
+  if (isString(value) || isNumber(value)) {
+    return createVNode(TextSymbol, null, value + '')
   } else {
-    // isVNode
-    const vnode = value as VNode
-    normalizeChildren(vnode)
-    return vnode
+    return value as VNode
   }
 }
 

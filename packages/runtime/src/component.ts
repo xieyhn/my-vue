@@ -21,7 +21,7 @@ export interface ComponentInternalInstance {
  */
 export function createComponentInstance(vnode: VNode) {
   const { setup, props: propsOptions } = vnode.type as any
-  const data = setup()
+  const data = (setup && setup()) || {}
 
   // 组件实例
   const instance: ComponentInternalInstance = {
