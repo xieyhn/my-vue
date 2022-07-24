@@ -11,7 +11,7 @@ import { TextSymbol, VNode, isSameVNode, normalize, FragmentSymbol } from "./vno
  * mount
  * 将 vnode 挂载到指定容器
  */
-function mount(contianer: HTMLElement, vnode: VNode) {
+function mount(contianer: HTMLElement, vnode: VNode, parentComponent?: ComponentInternalInstance) {
   if (isString(vnode.type)) {
     mountElement(contianer, vnode)
   } else if (vnode.type === TextSymbol) {
@@ -19,7 +19,7 @@ function mount(contianer: HTMLElement, vnode: VNode) {
   } else if (vnode.type === FragmentSymbol) {
     mountFragment(contianer, vnode)
   } else if (isObject(vnode.type)) {
-    mountComponent(contianer, vnode)
+    mountComponent(contianer, vnode, parentComponent)
   }
 }
 
@@ -72,8 +72,8 @@ function mountFragment(contianer: HTMLElement, vnode: VNode) {
 /**
  * 挂载组件
  */
-function mountComponent(container: HTMLElement, vnode: VNode) {
-  const instance = createComponentInstance(vnode)
+function mountComponent(container: HTMLElement, vnode: VNode, parentComponent?: ComponentInternalInstance) {
+  const instance = createComponentInstance(vnode, parentComponent)
   setupComponent(instance)
   setupRenderEffect(container, instance)
 }
@@ -161,14 +161,14 @@ function setupRenderEffect(container: HTMLElement, instance: ComponentInternalIn
     if (!instance.isMounted) {
       callLifeCycleHook(instance, LifeCycleHooks.BEFORE_MOUNT)
       instance.subTree = instance.render!.call(instance.proxy!)
-      mount(container, instance.subTree)
+      mount(container, instance.subTree, instance)
       instance.isMounted = true
       callLifeCycleHook(instance, LifeCycleHooks.MOUNTED)
     } else {
       updateComponentPreRender(instance)
 
       const newSubTree = instance.render!.call(instance.proxy!)
-      patch(container, instance.subTree!, newSubTree)
+      patch(container, instance.subTree!, newSubTree, instance)
       instance.subTree = newSubTree
     }
   }
@@ -298,9 +298,9 @@ function updateComponent(n1: VNode, n2: VNode) {
 /**
  * 处理组件
  */
-function processComponent(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
+function processComponent(contianer: HTMLElement, n1: VNode | null, n2: VNode, parentComponent?: ComponentInternalInstance) {
   if (n1 === null) {
-    mount(contianer, n2)
+    mount(contianer, n2, parentComponent)
   } else {
     updateComponent(n1, n2)
   }
@@ -331,7 +331,7 @@ function processElement(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
 /**
  * patch 两个 vnode，产生对实际 dom 的更新
  */
-export function patch(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
+export function patch(contianer: HTMLElement, n1: VNode | null, n2: VNode, parentComponent?: ComponentInternalInstance) {
   if (n1 === n2) return
 
   if (n1 && !isSameVNode(n1, n2)) {
@@ -350,7 +350,7 @@ export function patch(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
       break;
     default:
       if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-        processComponent(contianer, n1, n2)
+        processComponent(contianer, n1, n2, parentComponent)
       } else {
         // 是一个 HTML 元素的 vnode
         processElement(contianer, n1, n2)
