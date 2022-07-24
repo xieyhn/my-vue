@@ -1,5 +1,6 @@
 import { hasOwn, isFunction, isObject, NOOP } from '@my-vue/shared'
 import { initProps } from './componentProps'
+import { initSlots } from './componentSlots'
 import { VNode } from './vnode'
 
 export interface ComponentInternalInstance {
@@ -16,6 +17,7 @@ export interface ComponentInternalInstance {
   next?: VNode
   data?: Record<string, any>
   setupState?: Record<string, any>
+  slots?: Record<string, (...args: any[]) => VNode>
 }
 
 /**
@@ -34,7 +36,8 @@ export function createComponentInstance(vnode: VNode) {
 }
 
 const publicPropertyMap: Record<string | symbol, (ins: ComponentInternalInstance) => any> = {
-  $attrs: (ins: ComponentInternalInstance) => ins.attrs
+  $attrs: (ins: ComponentInternalInstance) => ins.attrs,
+  $slots: (ins: ComponentInternalInstance) => ins.slots
 }
 
 /**
@@ -74,6 +77,7 @@ export function setupComponent(instance: ComponentInternalInstance) {
   const { setup } = instance.vnode.type as any
   
   initProps(instance)
+  initSlots(instance)
   instance.proxy = new Proxy(instance, publicInstanceProxy)
   instance.render = (instance.vnode.type as any).render || NOOP
   
@@ -86,7 +90,8 @@ export function setupComponent(instance: ComponentInternalInstance) {
         if (instance.vnode.props && (eventName in instance.vnode.props)) {
           (instance.vnode.props[eventName] as Function)(...args)
         }
-      }
+      },
+      slots: instance.slots
     }
 
     const setupResult = setup.call(null, instance.props, setupContext)

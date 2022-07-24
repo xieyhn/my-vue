@@ -46,6 +46,8 @@ export function createVNode(
   if (children) {
     if (isArray(children)) {
       shapeFlag |= ShapeFlags.ARRAY_CHILDREN
+    } else if (isObject(children)) {
+      shapeFlag |= ShapeFlags.SLOTS_CHILDREN
     } else {
       // 文本
       shapeFlag |= ShapeFlags.TEXT_CHILDREN

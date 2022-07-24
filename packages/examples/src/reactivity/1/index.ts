@@ -5,14 +5,16 @@ const log = console.log.bind(console, '[x]')
 const contianer = document.querySelector('#app') as HTMLElement
 
 const myComponent = {
-  setup(props, { emit }) {
-    return () => createVNode('button', { onClick() { emit('test', '参数') } }, '点击')
+  setup(props, { emit, slots }) {
+    return () => createVNode(FragmentSymbol, null, [slots.header()])
   }
 }
 
 const rootComponent = {
   setup() {
-    return () => createVNode(myComponent, { onTest(a: string) { console.log('onTest', a) } })
+    return () => createVNode(myComponent, null, {
+      header: () => createVNode('h1', null, 'header')
+    })
   }
 }
 
