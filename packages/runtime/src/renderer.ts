@@ -137,6 +137,19 @@ function unmountChildren(vnode: VNode) {
 }
 
 /**
+ * 组件更新前的操作
+ */
+function updateComponentPreRender(instance: ComponentInternalInstance) {
+  if (instance.next) {
+    const next = instance.next
+    instance.vnode = next
+    instance.next = undefined
+    // 更新实例上的 props，接着走 render
+    updateProps(instance.props!, next.props as any || {})
+  }
+}
+
+/**
  * 组件 effect
  */
 function setupRenderEffect(container: HTMLElement, instance: ComponentInternalInstance) {
@@ -147,14 +160,8 @@ function setupRenderEffect(container: HTMLElement, instance: ComponentInternalIn
       mount(container, instance.subTree)
       instance.isMounted = true
     } else {
-      if (instance.next) {
-        // updateComponentPreRender -----------------
-        const next = instance.next
-        instance.vnode = next
-        instance.next = undefined
-        // 更新实例上的 props，接着走 render
-        updateProps(instance.props!, next.props?.props as any || {})
-      }
+      updateComponentPreRender(instance)
+
       const newSubTree = instance.render!.call(instance.proxy!)
       patch(container, instance.subTree!, newSubTree)
       instance.subTree = newSubTree
@@ -258,16 +265,13 @@ function processFragment(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
  * 是否需要重新更新组件
  */
 function shouldUpdateComponent(n1: VNode, n2: VNode) {
-  const { props: props1, children: children1 } = n1
-  const { props: props2, children: children2 } = n2
+  const { props: preProps = {}, children: children1 } = n1
+  const { props: nextProps = {}, children: children2 } = n2
 
   // children：插槽变化后需要重新渲染
   if (children1 || children2) {
     return true
   }
-  
-  const preProps = props1?.props || {}
-  const nextProps = props2?.props || {}
 
   return hasPropsChanged(preProps as any, nextProps as any)
 }

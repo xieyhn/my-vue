@@ -4,37 +4,21 @@ const log = console.log.bind(console, '[x]')
 
 const contianer = document.querySelector('#app') as HTMLElement
 
-const outerState = reactive({ title: '你好2' })
-
 const myComponent = {
-  props: {
-    title: ''
-  },
-  render() {
-    return createVNode('h1', null, this.title)
+  setup(props, { emit }) {
+    return () => createVNode('button', { onClick() { emit('test', '参数') } }, '点击')
   }
 }
 
-const vnode1 = createVNode({
+const rootComponent = {
   setup() {
-    const state = reactive({ title: '你好' })
-
-    return {
-      state
-    }
-  },
-  render() {
-    return createVNode(FragmentSymbol, null, [
-      createVNode('button', {
-        onClick: () => { this.state.title = '你好222' } 
-      }, '点击切换'),
-      createVNode(myComponent, { props: { title: this.state.title }, })
-    ])
+    return () => createVNode(myComponent, { onTest(a: string) { console.log('onTest', a) } })
   }
-})
+}
+
+const vnode1 = createVNode(rootComponent)
 
 render(vnode1, contianer)
-
 
 
 // const obj = []

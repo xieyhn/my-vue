@@ -75,20 +75,3 @@ export function normalize(value: unknown) {
     return value as VNode
   }
 }
-
-/**
- * 将子节统一规范于一个 VNode[]
- */
-export function normalizeChildren(vnode: VNode) {
-  const { children } = vnode
-
-  if (!children) {
-    vnode.children = null
-  } else if (isArray(children)) {
-    vnode.children = children.map(child => {
-      return normalize(child)
-    })
-  } else {
-    vnode.children = [normalize(children)]
-  }
-}
