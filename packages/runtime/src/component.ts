@@ -29,6 +29,8 @@ export interface ComponentInternalInstance {
   data?: Record<string, any>
   setupState?: Record<string, any>
   slots?: Record<string, (...args: any[]) => VNode>
+  parentComponent?: ComponentInternalInstance
+  provides: Record<string, any>
   [LifeCycleHooks.BEFORE_MOUNT]?: Function[]
   [LifeCycleHooks.MOUNTED]?: Function[]
   [LifeCycleHooks.BEFORE_UNMOUNT]?: Function[]
@@ -38,13 +40,15 @@ export interface ComponentInternalInstance {
 /**
  * 创建组件实例
  */
-export function createComponentInstance(vnode: VNode) {
+export function createComponentInstance(vnode: VNode, parentComponent?: ComponentInternalInstance) {
   const { props: propsOptions = {} } = vnode.type as any
   // 组件实例
   const instance: ComponentInternalInstance = {
     vnode,
     isMounted: false,
-    propsOptions
+    propsOptions,
+    parentComponent,
+    provides: parentComponent ? { ...parentComponent.provides } :  {}
   }
   vnode.component = instance
   return instance
