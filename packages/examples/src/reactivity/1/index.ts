@@ -1,11 +1,16 @@
 // import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect, render, h, createVNode, Fragment } from 'vue'
-import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol, FragmentSymbol } from 'my-vue'
+import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol, FragmentSymbol, getCurrentInstance, onBeforeMount, onMounted } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
 const contianer = document.querySelector('#app') as HTMLElement
 
 const myComponent = {
   setup(props, { emit, slots }) {
+
+    onMounted(() => {
+      console.log('onMounted')
+    })
+
     return () => createVNode(FragmentSymbol, null, [slots.header()])
   }
 }

@@ -1,7 +1,18 @@
 import { hasOwn, isFunction, isObject, NOOP } from '@my-vue/shared'
+import { LifeCycleHooks } from './componentLifeCycle'
 import { initProps } from './componentProps'
 import { initSlots } from './componentSlots'
 import { VNode } from './vnode'
+
+export let currentInstance: ComponentInternalInstance | undefined
+
+export function setCurrentInstace(instance: ComponentInternalInstance | undefined) {
+  currentInstance = instance
+}
+
+export function getCurrentInstance() {
+  return currentInstance
+}
 
 export interface ComponentInternalInstance {
   vnode: VNode
@@ -18,6 +29,10 @@ export interface ComponentInternalInstance {
   data?: Record<string, any>
   setupState?: Record<string, any>
   slots?: Record<string, (...args: any[]) => VNode>
+  [LifeCycleHooks.BEFORE_MOUNT]?: Function[]
+  [LifeCycleHooks.MOUNTED]?: Function[]
+  [LifeCycleHooks.BEFORE_UNMOUNT]?: Function[]
+  [LifeCycleHooks.UNMOUNTED]?: Function[]
 }
 
 /**
@@ -82,6 +97,7 @@ export function setupComponent(instance: ComponentInternalInstance) {
   instance.render = (instance.vnode.type as any).render || NOOP
   
   if (setup) {
+    currentInstance = instance
     const setupContext = {
       emit(rawName: string, ...args: any[]) {
         // xx => onXx
@@ -93,9 +109,8 @@ export function setupComponent(instance: ComponentInternalInstance) {
       },
       slots: instance.slots
     }
-
     const setupResult = setup.call(null, instance.props, setupContext)
-
+    currentInstance = undefined
     if (isFunction(setupResult)) {
       // render 函数
       instance.render = setupResult

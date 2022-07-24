@@ -1,6 +1,7 @@
 import { ReactiveEffect } from "@my-vue/reactivity";
 import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared";
 import { ComponentInternalInstance, createComponentInstance, setupComponent } from "./component";
+import { callLifeCycleHook, LifeCycleHooks } from "./componentLifeCycle";
 import { hasPropsChanged, updateProps } from "./componentProps";
 import { patchProp } from "./patchProp";
 import { queueJob } from "./scheduler";
@@ -120,8 +121,10 @@ function mountChildren(vnode: VNode) {
  * 组件卸载
  */
 function unmountComponent(vnode: VNode) {
-  console.log('组件卸载')
-  unmount(vnode.component?.subTree)
+  const instance = vnode.component!
+  callLifeCycleHook(instance, LifeCycleHooks.BEFORE_UNMOUNT)
+  unmount(instance.subTree)
+  callLifeCycleHook(instance, LifeCycleHooks.UNMOUNTED)
 }
 
 /**
@@ -156,9 +159,11 @@ function setupRenderEffect(container: HTMLElement, instance: ComponentInternalIn
   const componentUpdate = () => {
     // normalize!!!
     if (!instance.isMounted) {
+      callLifeCycleHook(instance, LifeCycleHooks.BEFORE_MOUNT)
       instance.subTree = instance.render!.call(instance.proxy!)
       mount(container, instance.subTree)
       instance.isMounted = true
+      callLifeCycleHook(instance, LifeCycleHooks.MOUNTED)
     } else {
       updateComponentPreRender(instance)
 
