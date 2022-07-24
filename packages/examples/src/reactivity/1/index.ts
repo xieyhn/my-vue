@@ -1,40 +1,31 @@
 // import { effect, reactive, ReactiveEffect, computed, ref, watch, watchEffect, render, h, createVNode, Fragment } from 'vue'
-import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol, FragmentSymbol } from 'my-vue'
+import { effect, reactive, computed, ref, watch, watchEffect, nextTick, render, createVNode, TextSymbol, FragmentSymbol, getCurrentInstance, onBeforeMount, onMounted } from 'my-vue'
 const log = console.log.bind(console, '[x]')
 
 const contianer = document.querySelector('#app') as HTMLElement
 
-const outerState = reactive({ title: '你好2' })
-
 const myComponent = {
-  props: {
-    title: ''
-  },
-  render() {
-    return createVNode('h1', null, this.title)
+  setup(props, { emit, slots }) {
+
+    onMounted(() => {
+      console.log('onMounted')
+    })
+
+    return () => createVNode(FragmentSymbol, null, [slots.header()])
   }
 }
 
-const vnode1 = createVNode({
+const rootComponent = {
   setup() {
-    const state = reactive({ title: '你好' })
-
-    return {
-      state
-    }
-  },
-  render() {
-    return createVNode(FragmentSymbol, null, [
-      createVNode('button', {
-        onClick: () => { this.state.title = '你好222' } 
-      }, '点击切换'),
-      createVNode(myComponent, { props: { title: this.state.title }, })
-    ])
+    return () => createVNode(myComponent, null, {
+      header: () => createVNode('h1', null, 'header')
+    })
   }
-})
+}
+
+const vnode1 = createVNode(rootComponent)
 
 render(vnode1, contianer)
-
 
 
 // const obj = []

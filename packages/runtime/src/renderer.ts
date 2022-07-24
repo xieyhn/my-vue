@@ -1,6 +1,7 @@
 import { ReactiveEffect } from "@my-vue/reactivity";
 import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared";
 import { ComponentInternalInstance, createComponentInstance, setupComponent } from "./component";
+import { callLifeCycleHook, LifeCycleHooks } from "./componentLifeCycle";
 import { hasPropsChanged, updateProps } from "./componentProps";
 import { patchProp } from "./patchProp";
 import { queueJob } from "./scheduler";
@@ -120,8 +121,10 @@ function mountChildren(vnode: VNode) {
  * 组件卸载
  */
 function unmountComponent(vnode: VNode) {
-  console.log('组件卸载')
-  unmount(vnode.component?.subTree)
+  const instance = vnode.component!
+  callLifeCycleHook(instance, LifeCycleHooks.BEFORE_UNMOUNT)
+  unmount(instance.subTree)
+  callLifeCycleHook(instance, LifeCycleHooks.UNMOUNTED)
 }
 
 /**
@@ -137,24 +140,33 @@ function unmountChildren(vnode: VNode) {
 }
 
 /**
+ * 组件更新前的操作
+ */
+function updateComponentPreRender(instance: ComponentInternalInstance) {
+  if (instance.next) {
+    const next = instance.next
+    instance.vnode = next
+    instance.next = undefined
+    // 更新实例上的 props，接着走 render
+    updateProps(instance.props!, next.props as any || {})
+  }
+}
+
+/**
  * 组件 effect
  */
 function setupRenderEffect(container: HTMLElement, instance: ComponentInternalInstance) {
   const componentUpdate = () => {
     // normalize!!!
     if (!instance.isMounted) {
+      callLifeCycleHook(instance, LifeCycleHooks.BEFORE_MOUNT)
       instance.subTree = instance.render!.call(instance.proxy!)
       mount(container, instance.subTree)
       instance.isMounted = true
+      callLifeCycleHook(instance, LifeCycleHooks.MOUNTED)
     } else {
-      if (instance.next) {
-        // updateComponentPreRender -----------------
-        const next = instance.next
-        instance.vnode = next
-        instance.next = undefined
-        // 更新实例上的 props，接着走 render
-        updateProps(instance.props!, next.props?.props as any || {})
-      }
+      updateComponentPreRender(instance)
+
       const newSubTree = instance.render!.call(instance.proxy!)
       patch(container, instance.subTree!, newSubTree)
       instance.subTree = newSubTree
@@ -258,16 +270,13 @@ function processFragment(contianer: HTMLElement, n1: VNode | null, n2: VNode) {
  * 是否需要重新更新组件
  */
 function shouldUpdateComponent(n1: VNode, n2: VNode) {
-  const { props: props1, children: children1 } = n1
-  const { props: props2, children: children2 } = n2
+  const { props: preProps = {}, children: children1 } = n1
+  const { props: nextProps = {}, children: children2 } = n2
 
   // children：插槽变化后需要重新渲染
   if (children1 || children2) {
     return true
   }
-  
-  const preProps = props1?.props || {}
-  const nextProps = props2?.props || {}
 
   return hasPropsChanged(preProps as any, nextProps as any)
 }
