@@ -8,6 +8,8 @@ export const toTypeString = (value: unknown): string =>
 
 export const isString = (val: unknown): val is string => typeof val === 'string'
 
+export const isNumber = (val: unknown): val is number => typeof val === 'number'
+
 export function isObject(val: unknown): val is Record<any, any> {
   return val !== null && typeof val === 'object'
 }
