@@ -18,7 +18,9 @@ export const Teleport = {
     } else {
       patchChildren(n1.el as HTMLElement, n1, n2)
       if (n2.props!.to !== n1.props!.to) {
-        debugger
+        (n2.children as VNode[]).forEach(vnode => {
+          target.appendChild(vnode.el!)
+        })
       }
     }
   }
