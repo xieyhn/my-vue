@@ -3,6 +3,7 @@ import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared";
 import { ComponentInternalInstance, createComponentInstance, setupComponent } from "./component";
 import { callLifeCycleHook, LifeCycleHooks } from "./componentLifeCycle";
 import { hasPropsChanged, updateProps } from "./componentProps";
+import { Teleport } from "./components/Teleport";
 import { patchProp } from "./patchProp";
 import { queueJob } from "./scheduler";
 import { TextSymbol, VNode, isSameVNode, normalize, FragmentSymbol } from "./vnode";
@@ -79,6 +80,17 @@ function mountComponent(container: HTMLElement, vnode: VNode, parentComponent?: 
 }
 
 /**
+ * 指定容器挂载子节点
+ */
+function _mountChildren(container: HTMLElement, vnode: VNode) {
+  const children = vnode.children as VNode[]
+  for(let i = 0; i < children.length; i++) {
+    children[i] = normalize(children[i])
+    mount(container, children[i])
+  }
+}
+
+/**
  * mountChildren
  * 挂载 vnode 的 children
  */
@@ -91,11 +103,7 @@ function mountChildren(vnode: VNode) {
     target = vnode.el as HTMLElement
   }
 
-  const children = vnode.children as VNode[]
-  for(let i = 0; i < children.length; i++) {
-    children[i] = normalize(children[i])
-    mount(target, children[i])
-  }
+  _mountChildren(target, vnode)
 }
 
 /**
@@ -349,7 +357,12 @@ export function patch(contianer: HTMLElement, n1: VNode | null, n2: VNode, paren
       processFragment(contianer, n1, n2)
       break;
     default:
-      if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+      if (n2.shapeFlag & ShapeFlags.TELEPORT) {
+        (n2.type as typeof Teleport).process(n1, n2, {
+          mountChildren: _mountChildren,
+          patchChildren
+        })
+      } else if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
         processComponent(contianer, n1, n2, parentComponent)
       } else {
         // 是一个 HTML 元素的 vnode
