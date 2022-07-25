@@ -1,5 +1,6 @@
 import { isArray, isNumber, isObject, isString, ShapeFlags } from "@my-vue/shared"
 import { ComponentInternalInstance } from "./component"
+import { isTeleport } from "./components/Teleport"
 
 export const TextSymbol = Symbol('Text')
 export const FragmentSymbol = Symbol('Fragment')
@@ -39,6 +40,7 @@ export function createVNode(
   let shapeFlag = 
     isString(type) 
       ? ShapeFlags.ELEMENT 
+      : isTeleport(type) ? ShapeFlags.TELEPORT
       : isObject(type) ? ShapeFlags.STATEFUL_COMPONENT
       : 0
 
