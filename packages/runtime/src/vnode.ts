@@ -21,6 +21,8 @@ export interface VNode {
   el?: HTMLElement | Text
   // 组件实例
   component?: ComponentInternalInstance
+  // teleport 的目标
+  target?: HTMLElement
 }
 
 export function isVNode(val: unknown): val is VNode {

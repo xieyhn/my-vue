@@ -13,10 +13,10 @@ export const Teleport = {
     const target = window.document.querySelector(n2.props?.to as string) as HTMLElement
     
     if (n1 === null) {
-      n2.el = target
+      n2.target = target
       mountChildren(target, n2)
     } else {
-      patchChildren(n1.el as HTMLElement, n1, n2)
+      patchChildren(n1.target!, n1, n2)
       if (n2.props!.to !== n1.props!.to) {
         (n2.children as VNode[]).forEach(vnode => {
           target.appendChild(vnode.el!)
