@@ -8,6 +8,9 @@ export const FragmentSymbol = Symbol('Fragment')
 // object 组件
 export type VNodeTypes = string | symbol | object
 
+export type ArrayChildren = (VNode | string | number)[]
+export type StringChildren = string
+
 export interface VNode {
   __v_isVNode: true
   // 形状标记，标记一些特征，如是否是普通 html 元素、是否是组件、子节点是字符串还是数组等
@@ -16,7 +19,7 @@ export interface VNode {
   type: VNodeTypes
   props: Record<string, unknown> | null
   key: string | number | symbol | null
-  children: unknown
+  children: ArrayChildren | StringChildren
   // 真实元素，普通元素，文本节点
   el?: HTMLElement | Text
   // 组件实例
@@ -36,7 +39,7 @@ export function isSameVNode(n1: VNode, n2: VNode) {
 export function createVNode(
   type: VNodeTypes,
   props: Record<string, unknown> | null = null,
-  children: unknown = null
+  children: VNode['children']
 ): VNode {
   // 字符串为基本元素类型
   let shapeFlag = 
@@ -74,10 +77,10 @@ export function createVNode(
   return vnode
 }
 
-export function normalize(value: unknown) {
+export function normalize(children: (string | number | VNode)[], i: number) {
+  const value = children[i]
+
   if (isString(value) || isNumber(value)) {
-    return createVNode(TextSymbol, null, value + '')
-  } else {
-    return value as VNode
+    children[i] = createVNode(TextSymbol, null, value + '')
   }
 }
