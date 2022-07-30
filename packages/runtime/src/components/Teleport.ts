@@ -2,7 +2,7 @@ import { mountChildren, patchChildren } from '../renderer'
 import { ArrayChildren, VNode } from '../vnode'
 
 export const Teleport = {
-  _isTeleport: true,
+  _v_isTeleport: true,
 
   process(n1: VNode | null, n2: VNode) {
     const target = window.document.querySelector(n2.props?.to as string) as HTMLElement
@@ -22,5 +22,5 @@ export const Teleport = {
 }
 
 export function isTeleport(value: unknown): value is typeof Teleport {
-  return !!(value && (value as any)._isTeleport)
+  return !!(value && (value as any)._v_isTeleport)
 }
