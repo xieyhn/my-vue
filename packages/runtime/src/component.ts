@@ -33,6 +33,8 @@ export interface ComponentInternalInstance {
   provides: Record<string, any>
   [LifeCycleHooks.BEFORE_MOUNT]?: Function[]
   [LifeCycleHooks.MOUNTED]?: Function[]
+  [LifeCycleHooks.BEFORE_UPDATE]?: Function[],
+  [LifeCycleHooks.UPDATED]?: Function[],
   [LifeCycleHooks.BEFORE_UNMOUNT]?: Function[]
   [LifeCycleHooks.UNMOUNTED]?: Function[]
 }

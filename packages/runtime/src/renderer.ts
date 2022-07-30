@@ -169,11 +169,12 @@ function setupRenderEffect(container: HTMLElement, anchor: ChildNode | null, ins
       instance.isMounted = true
       callLifeCycleHook(instance, LifeCycleHooks.MOUNTED)
     } else {
+      callLifeCycleHook(instance, LifeCycleHooks.BEFORE_UPDATE)
       updateComponentPreRender(instance)
-
       const newSubTree = instance.render!.call(instance.proxy!)
       patch(instance.subTree!, newSubTree, container, anchor, instance)
       instance.subTree = newSubTree
+      callLifeCycleHook(instance, LifeCycleHooks.UPDATED)
     }
   }
 
