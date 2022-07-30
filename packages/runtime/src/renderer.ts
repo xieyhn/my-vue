@@ -2,11 +2,11 @@ import { ReactiveEffect } from "@my-vue/reactivity";
 import { isArray, isObject, isString, ShapeFlags } from "@my-vue/shared";
 import { ComponentInternalInstance, createComponentInstance, setupComponent } from "./component";
 import { callLifeCycleHook, LifeCycleHooks } from "./componentLifeCycle";
-import { hasPropsChanged, updateProps } from "./componentProps";
+import { hasPropsChanged, updateProps, updateSlots } from "./componentProps";
 import { Teleport } from "./components/Teleport";
 import { patchProp } from "./patchProp";
 import { queueJob } from "./scheduler";
-import { TextSymbol, VNode, isSameVNode, normalize, FragmentSymbol, ArrayChildren } from "./vnode";
+import { TextSymbol, VNode, isSameVNode, normalize, FragmentSymbol, ArrayChildren, ObjectChildren } from "./vnode";
 
 /**
  * mount
@@ -149,8 +149,10 @@ function updateComponentPreRender(instance: ComponentInternalInstance) {
     const next = instance.next
     instance.vnode = next
     instance.next = undefined
-    // 更新实例上的 props，接着走 render
+    // 更新实例上的 props 和 slots，接着走 render
+    // 一定需要在源对象上修改，应该原对象已以 context 传递给 setup 方法，直接替换会导致丢掉引用
     updateProps(instance.props!, next.props as any || {})
+    updateSlots(instance.slots!, next.children as ObjectChildren)
   }
 }
 

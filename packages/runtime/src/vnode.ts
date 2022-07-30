@@ -10,6 +10,7 @@ export type VNodeTypes = string | symbol | object
 
 export type ArrayChildren = (VNode | string | number)[]
 export type StringChildren = string
+export type ObjectChildren = Record<string, any>
 
 export interface VNode {
   __v_isVNode: true
@@ -19,7 +20,7 @@ export interface VNode {
   type: VNodeTypes
   props: Record<string, unknown> | null
   key: string | number | symbol | null
-  children: ArrayChildren | StringChildren
+  children: ArrayChildren | StringChildren | ObjectChildren
   // 真实元素，普通元素，文本节点
   el?: HTMLElement | Text
   // 组件实例

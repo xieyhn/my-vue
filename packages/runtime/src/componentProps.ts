@@ -49,3 +49,14 @@ export function updateProps(preProps: Data, nextProps: Data) {
     }
   }
 }
+
+export function updateSlots(preSlots: Record<string, any>, nextSlots: Record<string, any>) {
+  for(let key in nextSlots) {
+    preSlots[key] = nextSlots[key]
+  }
+  for(let key in preSlots) {
+    if (!(key in nextSlots)) {
+      delete preSlots[key]
+    }
+  }
+}
