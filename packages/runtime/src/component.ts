@@ -31,10 +31,27 @@ export interface ComponentInternalInstance {
   slots?: Record<string, (...args: any[]) => VNode>
   parentComponent?: ComponentInternalInstance
   provides: Record<string, any>
+  ctx: {
+    deactivate?: (vnode: VNode) => void,
+    activate?: (vnode: VNode, container: HTMLElement, anchor: ChildNode | null) => void
+  },
   [LifeCycleHooks.BEFORE_MOUNT]?: Function[]
   [LifeCycleHooks.MOUNTED]?: Function[]
+  [LifeCycleHooks.BEFORE_UPDATE]?: Function[],
+  [LifeCycleHooks.UPDATED]?: Function[],
   [LifeCycleHooks.BEFORE_UNMOUNT]?: Function[]
   [LifeCycleHooks.UNMOUNTED]?: Function[]
+}
+
+export interface ComponentPublicInstance {
+  [p: string]: any,
+  setup?: (
+    props: ComponentInternalInstance['props'],
+    context: {
+      attrs: ComponentInternalInstance['attrs'],
+      slots: ComponentInternalInstance['slots']
+    }) => ComponentInternalInstance['setupState'] | ComponentPublicInstance['render'],
+  render?: (this: ComponentInternalInstance['proxy']) => VNode
 }
 
 /**
@@ -48,7 +65,8 @@ export function createComponentInstance(vnode: VNode, parentComponent?: Componen
     isMounted: false,
     propsOptions,
     parentComponent,
-    provides: parentComponent ? { ...parentComponent.provides } :  {}
+    provides: parentComponent ? { ...parentComponent.provides } :  {},
+    ctx: {}
   }
   vnode.component = instance
   return instance
