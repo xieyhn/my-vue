@@ -9,9 +9,9 @@ export const Teleport = {
     
     if (n1 === null) {
       n2.target = target
-      mountChildren(n2.children as ArrayChildren, target)
+      mountChildren(n2.children as ArrayChildren, target, null)
     } else {
-      patchChildren(n1, n2, n1.target!)
+      patchChildren(n1, n2, n1.target!, null)
       if (n2.props!.to !== n1.props!.to) {
         (n2.children as VNode[]).forEach(vnode => {
           target.appendChild(vnode.el!)
