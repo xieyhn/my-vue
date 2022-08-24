@@ -18,6 +18,7 @@
     "paths": {
       "my-vue": ["packages/my-vue/src"],
       "@my-vue/reactivity": ["packages/reactivity/src"],
+      "@my-vue/runtime": ["packages/runtime/src"],
       "@my-vue/shared": ["packages/shared/src"]
     }
   }

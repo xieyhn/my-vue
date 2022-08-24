@@ -1,15 +1,20 @@
 import { isObject } from '@my-vue/shared'
+import { Ref } from 'vue'
 import { mutableHandlers } from './baseHandlers'
+import { UnwrapRefSimple } from './ref'
 
 export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive',
-  RAW = '__v_raw'
+  RAW = '__v_raw',
+  SKIP = '__v_skip'
 }
 
 export interface Target {
   [ReactiveFlags.IS_REACTIVE]?: boolean
   [ReactiveFlags.RAW]?: any
 }
+
+export type UnwrapNestedRefs<T> = T extends Ref ? T : UnwrapRefSimple<T>
 
 export const reactiveMap = new WeakMap<Target, any>()
 
@@ -37,12 +42,12 @@ function createReactiveObject(
   return proxy
 }
 
-export function reactive<T extends object>(target: T): T {
+export function reactive<T extends object>(target: T): UnwrapNestedRefs<T> {
   return createReactiveObject(target, reactiveMap)
 }
 
 export function isReactive(value: unknown) {
-  return (value && (value as Target)[ReactiveFlags.IS_REACTIVE])
+  return !!(value && (value as Target)[ReactiveFlags.IS_REACTIVE])
 }
 
 export function toRaw<T>(value: T): T {
