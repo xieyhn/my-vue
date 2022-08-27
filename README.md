@@ -1,6 +1,6 @@
 # my-vue
 
-这是一个 Vue3 runtime 部分的一个简单实现，实现了以下 packages：
+这是一个 Vue3 runtime 部分的一个简单实现，有以下功能：
 
 + [x] reactivity package
 + [x] runtime package
